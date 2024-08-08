@@ -1,30 +1,54 @@
 import Live
 from ableton.v2.control_surface import ControlSurface
 from functools import partial
+import logging
+logger = logging.getLogger("HK-DEBUG")
 
 # Dictionary of track names and their corresponding color indices
-track_colors = {
-    "drums": 69,
-    "bass": 14,
-    "guitar": 63,
-    "vocals": 13,
-    "synth": 19,
-    "hats": 15,
-    "quarternote": 7,
-    "sixteenthnote": 17,
-    "openhat": 21,
-    "kick": 29,
-    "snare": 64
+instrument_colors = {
+    "drums"   : 29, # CORAL
+    "perc"    : 29, # CORAL
+    "kick"    : 29, # CORAL
+
+    "vocals"  : 14, # RED
+
+    "bass"    : 26, # PINK
+    "guitar"  : 63, # DARK OCEAN
+
+    "synth"   : 19, # GREEN
+    "melody"  : 19, # GREEN
 }
+
+track_type_colors = {
+    "audio": 10,
+    "midi": 24,
+}
+
+def track_is_grouped_under_instrument_group(track):
+    if track.group_track is not None:
+        group_track = track.group_track
+        if group_track.name == 'Instruments':
+            return True
+    return False
 
 def assign_track_color(track):
     """Assigns a color to a track based on its name"""
-    track_name = track.name.lower()
-    # Convert the keys in track_colors to lowercase
-    lower_case_track_colors = {k.lower(): v for k, v in track_colors.items()}
-    if track_name in lower_case_track_colors:
-        color_index = lower_case_track_colors[track_name]
+    first_word_track_name = track.name.lower().lstrip('0123456789-').split()[0]
+
+    if first_word_track_name in instrument_colors and not track_is_grouped_under_instrument_group(track):
+        color_index = instrument_colors[first_word_track_name]
         track.color_index = color_index
+        return
+
+    group_track = track.group_track
+    if group_track is not None:
+        track.color_index = group_track.color_index
+        return
+
+    if first_word_track_name in track_type_colors:
+        color_index = track_type_colors[first_word_track_name]
+        track.color_index = color_index
+
 
 def get_all_tracks(doc):
     all_tracks = []
