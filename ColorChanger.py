@@ -2,27 +2,17 @@ import Live
 from ableton.v2.control_surface import ControlSurface
 from functools import partial
 import logging
+import json
+import os
+
 logger = logging.getLogger("HK-DEBUG")
 
-# Dictionary of track names and their corresponding color indices
-instrument_colors = {
-    "drums"   : 29, # CORAL
-    "perc"    : 29, # CORAL
-    "kick"    : 29, # CORAL
+DEFAULT_COLORS_JSON = os.path.join(os.path.dirname(__file__), "colors.json")
 
-    "vocals"  : 14, # RED
-
-    "bass"    : 26, # PINK
-    "guitar"  : 63, # DARK OCEAN
-
-    "synth"   : 19, # GREEN
-    "melody"  : 19, # GREEN
-}
-
-track_type_colors = {
-    "audio": 10,
-    "midi": 24,
-}
+def load_colors_config(file_path=DEFAULT_COLORS_JSON):
+    with open(file_path, 'r') as file:
+        colors_config = json.load(file)
+    return colors_config
 
 def track_is_grouped_under_instrument_group(track):
     if track.group_track is not None:
@@ -31,23 +21,41 @@ def track_is_grouped_under_instrument_group(track):
             return True
     return False
 
+def assign_track_color_to_clips(track):
+    logger.info("Assigning color to clips in track %s", track.name)
+    if track.is_foldable:
+        return
+    if track.name == 'Master' or track.name == 'Main':
+        return
+    for clip_slot in track.clip_slots:
+        if clip_slot.has_clip:
+            clip_slot.clip.color_index = track.color_index
+    for clip in track.arrangement_clips:
+        clip.color_index = track.color_index
+
 def assign_track_color(track):
     """Assigns a color to a track based on its name"""
     first_word_track_name = track.name.lower().lstrip('0123456789-').split()[0]
+    colors = load_colors_config()
+    pre_group_colors = colors['pre_group_colors']
+    post_group_colors = colors['post_group_colors']
 
-    if first_word_track_name in instrument_colors and not track_is_grouped_under_instrument_group(track):
-        color_index = instrument_colors[first_word_track_name]
+    if first_word_track_name in pre_group_colors and not track_is_grouped_under_instrument_group(track):
+        color_index = pre_group_colors[first_word_track_name]
         track.color_index = color_index
+        assign_track_color_to_clips(track)
         return
 
     group_track = track.group_track
     if group_track is not None:
         track.color_index = group_track.color_index
+        assign_track_color_to_clips(track)
         return
 
-    if first_word_track_name in track_type_colors:
-        color_index = track_type_colors[first_word_track_name]
+    if first_word_track_name in post_group_colors:
+        color_index = post_group_colors[first_word_track_name]
         track.color_index = color_index
+        assign_track_color_to_clips(track)
 
 
 def get_all_tracks(doc):

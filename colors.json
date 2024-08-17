@@ -1,0 +1,24 @@
+{
+  "pre_group_colors": {
+    "synth": 19,
+    "melody": 19,
+
+    "fx": 31,
+    "drums": 29,
+    "drum": 29,
+    "hihat": 29,
+    "hats": 29,
+    "perc": 29,
+    "kick": 29,
+
+    "vocals": 14,
+    "vocal": 14,
+    "bass": 26,
+    "guitar": 63
+  },
+  "post_group_colors": {
+      "reference": 12,
+      "audio": 10,
+      "midi": 24
+  }
+}
