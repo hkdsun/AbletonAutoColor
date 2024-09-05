@@ -114,8 +114,17 @@ class ColorChanger(ControlSurface):
 
     def assign_colors_to_existing_tracks(self):
         """Assigns colors to existing tracks based on their names"""
+        self.schedule_message(5, lambda: self.fold_all(self.doc.tracks))
         for track in self.doc.tracks:
             assign_track_color(track)
+
+    def fold_all(self, tracks):
+        for track in tracks:
+            if track.is_foldable:
+                track.fold_state = True
+                logger.info("Folding track %s", track.name)
+
+
 
     def track_name_changed_listener(self, track):
         """Listener function called when a track's name is changed"""
