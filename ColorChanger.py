@@ -22,7 +22,7 @@ def track_is_grouped_under_instrument_group(track):
     return False
 
 def assign_track_color_to_clips(track):
-    logger.info("Assigning color to clips in track %s", track.name)
+    # logger.info("Assigning color to clips in track %s", track.name)
     if track.is_foldable:
         return
     if track.name == 'Master' or track.name == 'Main':
